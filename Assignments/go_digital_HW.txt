@@ -1,0 +1,213 @@
+Assignment 1
+
+
+Q1: What type of polymorphism has been implemented here?
+ans:The code demonstrates method overriding polymorphism, where the subclass PlatinumBankAccount overrides the implementation of the
+ method calculateInterest from the superclass BankAccount.
+
+Q2: Why did I choose the type "double" for balance?
+ans: The type "double" has been chosen for balance because it allows the variable to store decimal values,
+which is appropriate for representing a monetary amount.
+
+Q3: Why did I choose "interestRate" to be of type double and not int?
+ans: The type "double" has been chosen for interestRate instead of int because interest rate is typically represented as a decimal value, 
+and not as an integer.
+
+
+Q4: In the class BankAccount the member variables have been made protected - why not Public or Private?
+ans: The member variables have been made protected instead of public or private because protected variables can be accessed by subclasses, 
+which is necessary in this case since PlatinumBankAccount is a subclass of BankAccount and needs to access the balance and 
+interestRate variables.
+
+
+Q5: What is "Super" keyword?
+ans: "super" keyword is used to call a method or constructor of the superclass from within a subclass. In this case,
+"super(initialBalance, 0.1)" is used in the constructor of PlatinumBankAccount to call the constructor of the 
+superclass BankAccount with the initial balance and an interest rate of 0.1. The "super.calculateInterest()" is used to call the 
+calculateInterest method of the superclass from within the overridden method in the subclass.
+
+
+
+
+
+Assignment 2
+
+Q1. What is "JDBC_URL"? Can you give an example of that? Which database did you use?
+Q2: What if I don't close the connection? What will happen?
+Q3. Why "throws"?  What does this keyword denote?
+Q4. Can you write a code to get Account details using JDBC?
+
+public void save() throws SQLException {
+        Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        String sql = "INSERT INTO bank_accounts (account_number, balance, interest_rate) VALUES (?, ?, ?)";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, accountNumber);
+        statement.setDouble(2, balance);
+        statement.setDouble(3, interestRate);
+        statement.executeUpdate();
+        statement.close();
+        connection.close();
+    }
+
+Ans:
+
+1. Ans: "JDBC_URL" is a string that represents the URL of a database. It is used to connect to a database using 
+JDBC (Java Database Connectivity) API. The format of the JDBC URL varies depending on the database vendor,
+ but it typically includes the database type, server address, and database name.
+
+Here's an example of a JDBC URL for connecting to a MySQL database:
+jdbc:mysql://localhost:3306/mydb
+In this example, "jdbc" is the protocol, "mysql" is the database type,
+"localhost" is the server address, "3306" is the port number, and "mydb" is the database name.
+
+2.Ans: If you don't close the connection, it will remain open and occupy system resources, which can lead to performance issues or 
+even crashes if too many connections are left open. Additionally, if the connection pool is used, you may run out of
+ available connections, preventing other users from accessing the database.
+
+3. Ans: "throws" is a keyword used in Java to indicate that a method may throw an exception. 
+It is used in the method signature to declare the types of exceptions that may be thrown by the method.
+
+4.ans  Here's an example of a method that retrieves account details using JDBC:
+
+public Account getAccount(String accountNumber) throws SQLException {
+    Connection connection = null;
+    PreparedStatement statement = null;
+    ResultSet resultSet = null;
+    Account account = null;
+
+    try {
+        connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        String sql = "SELECT * FROM bank_accounts WHERE account_number=?";
+        statement = connection.prepareStatement(sql);
+        statement.setString(1, accountNumber);
+        resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            int id = resultSet.getInt("id");
+            double balance = resultSet.getDouble("balance");
+            double interestRate = resultSet.getDouble("interest_rate");
+            account = new Account(id, accountNumber, balance, interestRate);
+        }
+
+    } finally {
+        if (resultSet != null) resultSet.close();
+        if (statement != null) statement.close();
+        if (connection != null) connection.close();
+    }
+
+    return account;
+}
+
+
+This method uses a PreparedStatement to execute a SQL query that retrieves the account details 
+based on the given account number. If a matching record is found, it creates an Account object and returns it. 
+The method also properly closes all resources using a finally block to ensure that the connection, statement, 
+and result set are all closed, even if an exception is thrown.
+
+
+
+
+
+Assignment 3
+
+Assignment 3: Take a look at the following code snippet and answer the questions:
+
+Q1Which are the two databases this code is connecting to?
+Q2. Can you explain why two different JDBC drivers had to be loaded?
+Q3. Can you suggest how to make the code better using the "finally" block?
+
+
+import java.sql.*;
+
+public class DatabaseExample {
+
+    public static void main(String[] args) {
+
+        // JDBC URL, username and password for MySQL
+        String mysqlUrl = "jdbc:mysql://localhost:3306/mydatabase";
+        String mysqlUsername = "myuser";
+        String mysqlPassword = "mypassword";
+
+        // JDBC URL, username and password for PostgreSQL
+        String postgresUrl = "jdbc:postgresql://localhost:5432/mydatabase";
+        String postgresUsername = "myuser";
+        String postgresPassword = "mypassword";
+
+        try {
+            // Load the MySQL JDBC driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Connect to the MySQL database
+            Connection mysqlConn = DriverManager.getConnection(mysqlUrl, mysqlUsername, mysqlPassword);
+
+            // Load the PostgreSQL JDBC driver
+            Class.forName("org.postgresql.Driver");
+
+            // Connect to the PostgreSQL database
+            Connection postgresConn = DriverManager.getConnection(postgresUrl, postgresUsername, postgresPassword);
+
+            // Execute a query on the MySQL database
+            Statement mysqlStmt = mysqlConn.createStatement();
+            ResultSet mysqlRs = mysqlStmt.executeQuery("SELECT * FROM mytable");
+
+            // Execute a query on the PostgreSQL database
+            Statement postgresStmt = postgresConn.createStatement();
+            ResultSet postgresRs = postgresStmt.executeQuery("SELECT * FROM mytable");
+
+            // Process the results of the queries
+            while (mysqlRs.next()) {
+                // Process the MySQL result set
+            }
+
+            while (postgresRs.next()) {
+                // Process the PostgreSQL result set
+            }
+
+            // Close the connections
+            mysqlConn.close();
+            postgresConn.close();
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+Ans:
+Ans1. The code is connecting to two databases: MySQL and PostgreSQL.
+
+Ans2. Two different JDBC drivers had to be loaded because MySQL and PostgreSQL are two different database management systems (DBMS), 
+each requiring a different driver to connect to their respective databases. The MySQL JDBC driver is required to connect to the 
+MySQL database, while the PostgreSQL JDBC driver is required to connect to the PostgreSQL database.
+
+Ans3. The code can be improved by using the finally block to close the database connections. The finally block ensures that the
+connection is closed, regardless of whether an exception is thrown or not. Therefore, we can add finally blocks after the catch blocks, like
+
+try {
+    // ...
+} catch (ClassNotFoundException e) {
+    e.printStackTrace();
+} catch (SQLException e) {
+    e.printStackTrace();
+} finally {
+    try {
+        if (mysqlConn != null) {
+            mysqlConn.close();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    try {
+        if (postgresConn != null) {
+            postgresConn.close();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+
+This code will close the connections to both databases, regardless of whether an exception is thrown or not.
